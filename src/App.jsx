@@ -19,6 +19,8 @@ import { allCities, allSubjects, citySubjects, clinics } from "./data/clinics";
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
+const assetUrl = (path) => `${import.meta.env.BASE_URL}${path.replace(/^\/+/, "")}`;
+
 const russianServiceWords = [
   "из-за", "кроме", "между", "перед", "через", "чтобы", "потому", "поэтому",
   "без", "близ", "для", "под", "при", "про", "ради", "как", "что", "если",
@@ -69,7 +71,7 @@ const nominations = [
   {
     title: "Мгновенный фокус",
     description: "Быстрее других реагируют на заявки с сайта.",
-    image: "/images/nominations/lightning.png",
+    image: assetUrl("images/nominations/lightning.png"),
     overlay: "rgba(165, 190, 190, 0.78)",
     span: "lg:col-span-7",
     top: ["Глазная клиника 3Z — 4 мин.", "Омикрон — 4 мин.", "Центр офтальмохирургии «ИРИС» — 9 мин."],
@@ -78,7 +80,7 @@ const nominations = [
   {
     title: "Без слепых зон",
     description: "Не оставляют заявки пациентов без обратной связи.",
-    image: "/images/nominations/magnifier.png",
+    image: assetUrl("images/nominations/magnifier.png"),
     overlay: "rgba(198, 218, 213, 0.8)",
     span: "lg:col-span-5",
     top: ["Глазная клиника 3Z — 100%", "Омикрон — 100%", "Центр офтальмохирургии «ИРИС» — 100%"],
@@ -87,7 +89,7 @@ const nominations = [
   {
     title: "Запись в один клик",
     description: "Позволяют выбрать специалиста и время визита без звонка в клинику.",
-    image: "/images/nominations/cursor.png",
+    image: assetUrl("images/nominations/cursor.png"),
     overlay: "rgba(22, 38, 104, 0.82)",
     span: "lg:col-span-5",
     dark: true,
@@ -97,7 +99,7 @@ const nominations = [
   {
     title: "Держат в фокусе",
     description: "Стабильно напоминают пациентам о предстоящем визите.",
-    image: "/images/nominations/bell.png",
+    image: assetUrl("images/nominations/bell.png"),
     overlay: "rgba(50, 68, 115, 0.82)",
     span: "lg:col-span-7",
     dark: true,
@@ -107,7 +109,7 @@ const nominations = [
   {
     title: "Не теряют из виду",
     description: "Продолжают работать с пациентом даже после отмены записи.",
-    image: "/images/nominations/return.png",
+    image: assetUrl("images/nominations/return.png"),
     overlay: "rgba(125, 120, 130, 0.82)",
     span: "lg:col-span-7",
     dark: true,
@@ -117,7 +119,7 @@ const nominations = [
   {
     title: "Двойной фокус",
     description: "Используют сразу два канала напоминания о визите.",
-    image: "/images/nominations/phone.png",
+    image: assetUrl("images/nominations/phone.png"),
     overlay: "rgba(170, 165, 190, 0.8)",
     span: "lg:col-span-5",
     top: ["САДКО.ВИЖУ", "Реал Вижн", "Визион"],
@@ -363,7 +365,7 @@ function TopClinics() {
               <h3 className={`top-clinic-title mt-5 max-w-[1180px] shrink-0 font-medium leading-[0.92] tracking-[-0.05em] text-[#130F33] sm:mt-7 ${index === 2 ? "text-[clamp(2rem,9vw,4rem)] md:text-[clamp(2.25rem,5.4vw,6rem)]" : "text-[clamp(2.25rem,10vw,4.75rem)] md:text-[clamp(3.4rem,7vw,7.8rem)]"}`}>{clinic.name}</h3>
 
               <div className="top-clinic-trophy relative -mt-1 aspect-[1254/815] w-[min(36rem,86vw,54vh)] shrink-0 overflow-hidden sm:-mt-2 md:w-[min(54rem,72vw,68vh)] lg:w-[min(54rem,62vw,74vh)]">
-                <img src={`/images/trophy-place-${clinic.rank}.png`} alt={`Кубок: ${clinic.rank} место`} className="top-clinic-trophy-image absolute inset-x-0 top-0 h-auto w-full object-contain" loading={index === 0 ? "eager" : "lazy"} />
+                <img src={assetUrl(`images/trophy-place-${clinic.rank}.png`)} alt={`Кубок: ${clinic.rank} место`} className="top-clinic-trophy-image absolute inset-x-0 top-0 h-auto w-full object-contain" loading={index === 0 ? "eager" : "lazy"} />
               </div>
 
               <div className="top-clinic-details mt-1 grid w-full shrink-0 grid-cols-3 border-t border-[#130F33]/20 pt-4 text-left sm:mt-2 sm:pt-6 md:mt-auto">
@@ -862,7 +864,7 @@ function App() {
       <section id="top" className="relative isolate min-h-[100dvh] overflow-hidden bg-[#EEF0F8] text-[#130F33]" onPointerMove={moveHeroReveal} onPointerLeave={hideHeroReveal}>
         <div ref={heroVisual} className="hero-photo hero-reveal absolute inset-0">
           <img
-            src="/images/hero-reveal-off.webp"
+            src={assetUrl("images/hero-reveal-off.webp")}
             alt=""
             aria-hidden="true"
             className="pointer-events-none absolute inset-0 h-full w-full object-cover object-[24%_center] lg:object-center"
@@ -870,7 +872,7 @@ function App() {
             loading="eager"
           />
           <img
-            src="/images/hero-reveal-on.webp"
+            src={assetUrl("images/hero-reveal-on.webp")}
             alt=""
             aria-hidden="true"
             className="hero-reveal-lit pointer-events-none absolute inset-0 h-full w-full object-cover object-[24%_center] lg:object-center"
@@ -880,7 +882,7 @@ function App() {
         <div className="hero-shell pointer-events-none relative z-[1] mx-auto flex min-h-[100dvh] max-w-[1500px] items-start px-5 pb-20 pt-16 md:px-10 md:pt-32 lg:pb-24 lg:pt-40">
           <HeroCopy />
         </div>
-        <div aria-hidden="true" className="hero-copy-inverse pointer-events-none absolute inset-0 z-[2]">
+        <div aria-hidden="true" className="hero-copy-inverse pointer-events-none absolute inset-0 z-[2]" style={{ "--hero-text-mask": `url("${assetUrl("images/hero-text-mask.png")}")` }}>
           <div className="hero-shell mx-auto flex min-h-[100dvh] max-w-[1500px] items-start px-5 pb-20 pt-16 md:px-10 md:pt-32 lg:pb-24 lg:pt-40">
             <HeroCopy inverse />
           </div>
@@ -917,8 +919,8 @@ function App() {
 
       <section id="contact" className="relative isolate min-h-[760px] overflow-hidden bg-[#EEF0F8] py-14 lg:min-h-[820px] lg:py-16" onPointerMove={moveContactReveal} onPointerLeave={hideContactReveal}>
         <div ref={contactVisual} className="contact-visual contact-reveal pointer-events-none absolute inset-0">
-          <img src="/images/contact-growth-lens-off.png" alt="" aria-hidden="true" className="contact-scene absolute inset-0 h-full w-full" loading="lazy" />
-          <img src="/images/contact-growth-lens-on.png" alt="" aria-hidden="true" className="contact-scene contact-reveal-lit absolute inset-0 h-full w-full" loading="lazy" />
+          <img src={assetUrl("images/contact-growth-lens-off.png")} alt="" aria-hidden="true" className="contact-scene absolute inset-0 h-full w-full" loading="lazy" />
+          <img src={assetUrl("images/contact-growth-lens-on.png")} alt="" aria-hidden="true" className="contact-scene contact-reveal-lit absolute inset-0 h-full w-full" loading="lazy" />
         </div>
         <div className="contact-mobile-veil pointer-events-none absolute inset-0 lg:hidden" />
         <div className="relative mx-auto grid min-h-[650px] max-w-[1500px] items-center px-5 md:px-10 lg:grid-cols-12">
@@ -927,7 +929,7 @@ function App() {
             <p className="contact-lead mt-6 max-w-2xl text-lg leading-relaxed">Заявка — только начало пути. Важно, что происходит дальше: насколько удобно записаться, как быстро клиника выходит на связь, подтверждает визит, напоминает о нём и возвращает пациента после отмены.</p>
             <div className="contact-glass hero-frost-panel mt-7 p-5 lg:p-6"><p className="max-w-3xl text-lg leading-relaxed">Реаспект помогает клиникам выстраивать digital-маркетинг как единую систему — от привлечения пациента и сайта до аналитики и CRM-коммуникаций. Поможем найти слабые места в пути пациента и определить точки роста.</p></div>
             <div className="contact-actions mt-4 bg-[#130F33] p-6 text-white lg:p-7">
-              <div className="flex items-center gap-3"><img src="/brand/reaspekt-mark-white.png" alt="" className="h-9 w-9 shrink-0 object-contain" /><img src="/brand/reaspekt-logo.png" alt="Реаспект" className="w-36 brightness-0 invert" /></div>
+              <div className="flex items-center gap-3"><img src={assetUrl("brand/reaspekt-mark-white.png")} alt="" className="h-9 w-9 shrink-0 object-contain" /><img src={assetUrl("brand/reaspekt-logo.png")} alt="Реаспект" className="w-36 brightness-0 invert" /></div>
               <button type="button" onClick={() => setContactOpen(true)} className="focus-ring group mt-6 flex w-full items-center justify-between gap-4 bg-white px-6 py-4 text-left font-medium text-[#130F33] transition-colors hover:bg-[#C6DAD5] active:translate-y-px">Обсудить digital-маркетинг клиники <ArrowUpRight className="shrink-0 transition-transform group-hover:-translate-y-1 group-hover:translate-x-1" size={20} /></button>
               <div className="mt-5 flex flex-wrap items-center gap-x-7 gap-y-3">
                 <a href="https://www.reaspekt.ru/cases/health-wellness/" target="_blank" rel="noreferrer" className="focus-ring inline-flex border-b border-white/50 pb-1 text-sm text-white/80 transition-colors hover:text-white">Смотреть кейсы в медицине</a>

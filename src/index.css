@@ -135,8 +135,8 @@ thead .rating-pinned-cell::after {
 
 .hero-copy-inverse {
   color: #fff;
-  -webkit-mask-image: url("/images/hero-text-mask.png");
-  mask-image: url("/images/hero-text-mask.png");
+  -webkit-mask-image: var(--hero-text-mask);
+  mask-image: var(--hero-text-mask);
   -webkit-mask-size: cover;
   mask-size: cover;
   -webkit-mask-position: 24% center;
