@@ -696,9 +696,9 @@ function Market() {
 function Methodology() {
   return (
     <section id="methodology" className="bg-[#130F33] py-16 text-white lg:py-20">
-      <div className="mx-auto grid max-w-[1500px] gap-10 px-5 md:px-10 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-14">
+      <div className="mx-auto grid max-w-[1500px] gap-10 px-5 md:px-10 lg:grid-cols-[minmax(0,6fr)_minmax(0,6fr)] lg:gap-14">
         <div className="methodology-title h-fit lg:sticky lg:top-20">
-          <h2 data-typography-exception className="max-w-xl text-[clamp(3rem,5.4vw,6.6rem)] font-medium leading-[0.93] tracking-[-0.055em]">
+          <h2 data-typography-exception className="max-w-xl text-[clamp(3rem,5vw,6.25rem)] font-medium leading-[0.93] tracking-[-0.055em]">
             <span className="block">Как</span>
             <span className="block">проводилось</span>
             <span className="block">исследование</span>
@@ -1016,7 +1016,7 @@ function App() {
       )}
 
       <footer className="bg-[#130F33] py-12 text-white">
-        <div className="mx-auto flex max-w-[1500px] flex-col gap-8 px-5 md:px-10 lg:flex-row lg:items-end lg:justify-between"><p className="max-w-3xl text-sm leading-relaxed text-white/65">Исследование подготовлено <strong className="font-medium text-white">Reaspekt</strong> — агентством digital-маркетинга. Работаем на основе данных и помогаем бизнесу расти с помощью рекламы, SEO, аналитики, CRM-маркетинга и развития сайтов.</p><a href="#top" className="focus-ring group flex items-center gap-2 text-sm text-white/70 hover:text-white">Наверх <ArrowUp className="transition-transform group-hover:-translate-y-1" size={17} /></a></div>
+        <div className="mx-auto flex max-w-[1500px] flex-col gap-8 px-5 md:px-10 lg:flex-row lg:items-end lg:justify-between"><p className="max-w-3xl text-sm leading-relaxed text-white/65">Исследование подготовлено <strong className="font-medium text-white">Реаспект</strong> — агентством digital-маркетинга. Работаем на основе данных и помогаем бизнесу расти с помощью рекламы, SEO, аналитики, CRM-маркетинга и развития сайтов.</p><a href="#top" className="focus-ring group flex items-center gap-2 text-sm text-white/70 hover:text-white">Наверх <ArrowUp className="transition-transform group-hover:-translate-y-1" size={17} /></a></div>
       </footer>
     </main>
   );
