@@ -7,6 +7,7 @@ import {
   ArrowRight,
   ArrowUp,
   ArrowUpRight,
+  ArrowsDownUp,
   CalendarCheck,
   CaretDown,
   Check,
@@ -16,6 +17,7 @@ import {
   X,
 } from "@phosphor-icons/react";
 import { allCities, allSubjects, citySubjects, clinics } from "./data/clinics";
+import { ratingColumns, sortClinics } from "./data/ratingSort";
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
@@ -388,6 +390,7 @@ function RatingTable() {
   const [search, setSearch] = useState("");
   const [showAll, setShowAll] = useState(false);
   const [expanded, setExpanded] = useState(null);
+  const [sort, setSort] = useState({ key: "rank", direction: "ascending" });
 
   const filtered = useMemo(() => {
     const normalized = search.trim().toLocaleLowerCase("ru");
@@ -400,7 +403,15 @@ function RatingTable() {
   }, [city, search, subject]);
 
   useEffect(() => setShowAll(city !== "Все города" || subject !== "Все субъекты" || Boolean(search)), [city, search, subject]);
-  const visible = showAll ? filtered : filtered.slice(0, 15);
+  const sorted = useMemo(() => sortClinics(filtered, sort.key, sort.direction), [filtered, sort]);
+  const visible = showAll ? sorted : sorted.slice(0, 15);
+
+  const toggleSort = (key) => {
+    setSort((current) => ({
+      key,
+      direction: current.key === key && current.direction === "ascending" ? "descending" : "ascending",
+    }));
+  };
 
   useGSAP(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
@@ -448,7 +459,19 @@ function RatingTable() {
           </colgroup>
           <thead className="bg-[#130F33] text-white">
             <tr className="text-[11px] font-medium leading-[1.2] tracking-[0.01em]">
-              {["Место", "Клиника / сеть", "Среднее время до первого звонка", "Перезвон по заявкам", "Онлайн-запись", "Цель в Яндекс Метрике", "«Спасибо за заявку»", "Автоподтверждение записи", "Напоминание о записи", "Каналы напоминаний", "Взаимодействие после отмены"].map((heading, index) => <th key={heading} className={`border-b border-r border-white/15 bg-[#130F33] px-3 py-3 align-middle last:border-r-0 ${index === 0 ? "rating-pinned-cell w-[88px] min-w-[88px] max-w-[88px] md:sticky md:left-0 md:z-40" : index === 1 ? "rating-pinned-cell rating-pinned-edge w-[250px] min-w-[250px] max-w-[250px] md:sticky md:left-[88px] md:z-40" : ""}`}>{heading === "Автоподтверждение записи" ? <>Автоподтверждение<br />записи</> : heading}</th>)}
+              {ratingColumns.map((column, index) => {
+                const selected = sort.key === column.key;
+                const SortIcon = selected ? (sort.direction === "ascending" ? ArrowUp : ArrowDown) : ArrowsDownUp;
+                const nextDirection = selected && sort.direction === "ascending" ? "убыванию" : "возрастанию";
+                return (
+                  <th key={column.key} scope="col" aria-sort={selected ? sort.direction : "none"} className={`border-b border-r border-white/15 bg-[#130F33] align-middle last:border-r-0 ${index === 0 ? "rating-pinned-cell w-[88px] min-w-[88px] max-w-[88px] md:sticky md:left-0 md:z-40" : index === 1 ? "rating-pinned-cell rating-pinned-edge w-[250px] min-w-[250px] max-w-[250px] md:sticky md:left-[88px] md:z-40" : ""}`}>
+                    <button type="button" onClick={() => toggleSort(column.key)} aria-label={`${column.label}: сортировать по ${nextDirection}`} title={`Сортировать по ${nextDirection}`} className="rating-sort-button w-full px-3 py-3 text-left transition-colors hover:bg-white/10">
+                      <span>{column.key === "autoConfirmation" ? <>Автоподтверждение<br />записи</> : column.label}</span>
+                      <SortIcon size={12} aria-hidden="true" className={`ml-1 inline-block align-middle ${selected ? "opacity-100" : "opacity-45"}`} />
+                    </button>
+                  </th>
+                );
+              })}
             </tr>
           </thead>
           <tbody>
@@ -716,7 +739,7 @@ function App() {
   const heroVisual = useRef(null);
   const contactVisual = useRef(null);
   const studyTabsStart = useRef(null);
-  const tabScrollFrame = useRef(null);
+  const studyNav = useRef(null);
   const [contactOpen, setContactOpen] = useState(false);
   const [activeTab, setActiveTab] = useState(() => {
     const hash = window.location.hash.replace("#", "");
@@ -739,12 +762,58 @@ function App() {
   }, []);
 
   useEffect(() => {
-    const syncHash = () => {
-      const hash = window.location.hash.replace("#", "");
-      if (tabs.some((tab) => tab.id === hash)) setActiveTab(hash);
+    const container = studyTabsStart.current;
+    const nav = studyNav.current;
+    if (!container || !nav) return undefined;
+    const sections = tabs.map(({ id }) => document.getElementById(id));
+    let frame = 0;
+    let refreshFrame = 0;
+
+    const updateActiveSection = () => {
+      frame = 0;
+      const threshold = nav.offsetHeight + 2;
+      let current = tabs[0].id;
+      sections.forEach((section, index) => {
+        if (section.getBoundingClientRect().top <= threshold) current = tabs[index].id;
+      });
+      setActiveTab(current);
     };
+    const scheduleUpdate = () => {
+      if (!frame) frame = requestAnimationFrame(updateActiveSection);
+    };
+    const syncHash = () => {
+      const id = window.location.hash.slice(1);
+      const section = sections.find((item) => item.id === id);
+      if (!section) return;
+      window.scrollTo({
+        top: Math.max(0, section.getBoundingClientRect().top + window.scrollY - nav.offsetHeight),
+        behavior: "instant",
+      });
+      scheduleUpdate();
+    };
+    // Filters, expanded rows and fonts can change the height of earlier sections.
+    const resizeObserver = new ResizeObserver(() => {
+      container.style.setProperty("--study-nav-height", `${nav.offsetHeight}px`);
+      scheduleUpdate();
+      cancelAnimationFrame(refreshFrame);
+      refreshFrame = requestAnimationFrame(() => ScrollTrigger.refresh());
+    });
+    resizeObserver.observe(nav);
+    sections.forEach((section) => resizeObserver.observe(section));
+    container.style.setProperty("--study-nav-height", `${nav.offsetHeight}px`);
+    window.addEventListener("scroll", scheduleUpdate, { passive: true });
     window.addEventListener("hashchange", syncHash);
-    return () => window.removeEventListener("hashchange", syncHash);
+    const initialFrame = requestAnimationFrame(syncHash);
+    scheduleUpdate();
+
+    return () => {
+      resizeObserver.disconnect();
+      window.removeEventListener("scroll", scheduleUpdate);
+      window.removeEventListener("hashchange", syncHash);
+      cancelAnimationFrame(initialFrame);
+      cancelAnimationFrame(frame);
+      cancelAnimationFrame(refreshFrame);
+    };
   }, []);
 
   useEffect(() => {
@@ -764,27 +833,15 @@ function App() {
   }, [contactOpen]);
 
   const switchTab = (id) => {
+    const section = document.getElementById(id);
+    if (!section) return;
     setActiveTab(id);
     window.history.replaceState(null, "", `#${id}`);
-
-    if (tabScrollFrame.current) cancelAnimationFrame(tabScrollFrame.current);
-    tabScrollFrame.current = requestAnimationFrame(() => {
-      tabScrollFrame.current = requestAnimationFrame(() => {
-        ScrollTrigger.refresh();
-        const anchor = studyTabsStart.current;
-        if (!anchor) return;
-
-        const top = anchor.getBoundingClientRect().top + window.scrollY;
-        window.scrollTo({ top: Math.max(0, Math.round(top)), behavior: "auto" });
-        ScrollTrigger.update();
-        tabScrollFrame.current = null;
-      });
+    window.scrollTo({
+      top: Math.max(0, section.getBoundingClientRect().top + window.scrollY - (studyNav.current?.offsetHeight || 0)),
+      behavior: "instant",
     });
   };
-
-  useEffect(() => () => {
-    if (tabScrollFrame.current) cancelAnimationFrame(tabScrollFrame.current);
-  }, []);
 
   const moveHeroReveal = (event) => {
     const visual = heroVisual.current;
@@ -852,13 +909,6 @@ function App() {
       .from(".contact-actions", { y: 26, opacity: 0, duration: 0.72 }, "-=0.52");
   }, { scope: root });
 
-  useGSAP(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    gsap.fromTo(".tab-panel-content", { opacity: 0, y: 22, clipPath: "inset(0 0 5% 0)" }, { opacity: 1, y: 0, clipPath: "inset(0 0 0% 0)", duration: 0.65, ease: "power3.out", clearProps: "transform,clipPath" });
-    const refreshCall = gsap.delayedCall(0.12, () => ScrollTrigger.refresh());
-    return () => refreshCall.kill();
-  }, { scope: root, dependencies: [activeTab] });
-
   return (
     <main ref={root} className="w-full max-w-full overflow-x-clip">
       <section id="top" className="relative isolate min-h-[100dvh] overflow-hidden bg-[#EEF0F8] text-[#130F33]" onPointerMove={moveHeroReveal} onPointerLeave={hideHeroReveal}>
@@ -897,21 +947,25 @@ function App() {
 
       <section id="study" className="bg-white pb-20 pt-12 lg:pb-24 lg:pt-16">
         <div ref={studyTabsStart} className="mx-auto max-w-[1500px] px-5 md:px-10">
-          <div className="study-tabs sticky top-0 z-[80] grid grid-cols-3 border border-[#130F33] bg-white" role="tablist" aria-label="Навигация по исследованию">
-            {tabs.map((tab) => <button key={tab.id} type="button" role="tab" aria-selected={activeTab === tab.id} onClick={() => switchTab(tab.id)} className={`focus-ring min-w-0 border-r border-[#130F33] px-2 py-4 text-center text-[clamp(0.72rem,3.35vw,0.95rem)] font-medium leading-tight transition-colors last:border-r-0 sm:px-4 sm:py-5 sm:text-base lg:px-6 ${activeTab === tab.id ? "bg-[#130F33] text-white" : "bg-white text-[#130F33] hover:bg-[#C6DAD5]"}`}>{tab.label}</button>)}
-          </div>
+          <nav ref={studyNav} className="study-tabs sticky top-0 z-[80] grid grid-cols-3 border border-[#130F33] bg-white" aria-label="Навигация по исследованию">
+            {tabs.map((tab) => <a key={tab.id} href={`#${tab.id}`} aria-current={activeTab === tab.id ? "location" : undefined} onClick={(event) => {
+              if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+              event.preventDefault();
+              switchTab(tab.id);
+            }} className={`focus-ring min-w-0 border-r border-[#130F33] px-2 py-4 text-center text-[clamp(0.72rem,3.35vw,0.95rem)] font-medium leading-tight transition-colors last:border-r-0 sm:px-4 sm:py-5 sm:text-base lg:px-6 ${activeTab === tab.id ? "bg-[#130F33] text-white" : "bg-white text-[#130F33] hover:bg-[#C6DAD5]"}`}>{tab.label}</a>)}
+          </nav>
 
-          <div key={activeTab} className="tab-panel-content pt-12 lg:pt-16" role="tabpanel">
-            {activeTab === "rating" && (
-              <div>
+          <section id="rating" aria-label="Рейтинг клиник" className="study-section pt-12 lg:pt-16">
                 <div className="reveal-heading grid gap-8 lg:grid-cols-12"><h2 className="text-[clamp(3rem,5vw,5.7rem)] font-medium leading-[0.95] tracking-[-0.045em] lg:col-span-7">Рейтинг клиник</h2><div className="lg:col-span-5"><p className="text-xl font-medium leading-relaxed">Сравниваем клиники по скорости и стабильности обработки онлайн-заявок, а также по тому, насколько полно они сопровождают пациента после обращения.</p><p className="mt-5 text-[#6D7E80]">Основным показателем является среднее время до первого звонка.</p></div></div>
                 {showTopClinics && <TopClinics />}
                 <RatingTable />
-              </div>
-            )}
-            {activeTab === "nominations" && <Nominations />}
-            {activeTab === "market" && <Market />}
-          </div>
+          </section>
+          <section id="nominations" aria-label="Номинации" className="study-section mt-16 pt-12 lg:mt-24 lg:pt-16">
+            <Nominations />
+          </section>
+          <section id="market" aria-label="Что происходит на рынке" className="study-section mt-16 pt-12 lg:mt-24 lg:pt-16">
+            <Market />
+          </section>
         </div>
       </section>
 

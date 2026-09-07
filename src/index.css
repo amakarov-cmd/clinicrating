@@ -58,6 +58,13 @@ button { cursor: pointer; }
   table-layout: fixed;
 }
 
+.study-section { scroll-margin-top: var(--study-nav-height, 72px); }
+
+.rating-sort-button:focus-visible {
+  outline: 2px solid #a5bebe;
+  outline-offset: -3px;
+}
+
 .rating-table th,
 .rating-table td {
   background-clip: border-box;
