@@ -18,6 +18,7 @@ import {
 } from "@phosphor-icons/react";
 import { allCities, allSubjects, citySubjects, clinics } from "./data/clinics";
 import { ratingColumns, sortClinics } from "./data/ratingSort";
+import { buildContactPayload, getContactEndpoint, sendContactSubmission } from "./contactSubmission";
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
@@ -741,6 +742,7 @@ function App() {
   const studyTabsStart = useRef(null);
   const studyNav = useRef(null);
   const [contactOpen, setContactOpen] = useState(false);
+  const [contactStatus, setContactStatus] = useState("idle");
   const [activeTab, setActiveTab] = useState(() => {
     const hash = window.location.hash.replace("#", "");
     return tabs.some((tab) => tab.id === hash) ? hash : "rating";
@@ -877,11 +879,28 @@ function App() {
     contactVisual.current?.style.setProperty("--contact-reveal-opacity", "0");
   };
 
-  const submitContact = (event) => {
+  const openContact = () => {
+    setContactStatus("idle");
+    setContactOpen(true);
+  };
+
+  const submitContact = async (event) => {
     event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    const body = `Имя: ${data.get("name")}\nТелефон: ${data.get("phone")}`;
-    window.location.href = `mailto:hello@reaspekt.ru?subject=${encodeURIComponent("Обсудить digital-маркетинг клиники")}&body=${encodeURIComponent(body)}`;
+    const form = event.currentTarget;
+    const endpoint = getContactEndpoint();
+    if (!endpoint) {
+      setContactStatus("configuration-error");
+      return;
+    }
+
+    setContactStatus("submitting");
+    try {
+      await sendContactSubmission(endpoint, buildContactPayload(form));
+      form.reset();
+      setContactStatus("success");
+    } catch {
+      setContactStatus("error");
+    }
   };
 
   useGSAP(() => {
@@ -984,7 +1003,7 @@ function App() {
             <div className="contact-glass hero-frost-panel mt-7 p-5 lg:p-6"><p className="max-w-3xl text-lg leading-relaxed">Реаспект помогает клиникам выстраивать digital-маркетинг как единую систему — от привлечения пациента и сайта до аналитики и CRM-коммуникаций. Поможем найти слабые места в пути пациента и определить точки роста.</p></div>
             <div className="contact-actions mt-4 bg-[#130F33] p-6 text-white lg:p-7">
               <div className="flex items-center gap-3"><img src={assetUrl("brand/reaspekt-mark-white.png")} alt="" className="h-9 w-9 shrink-0 object-contain" /><img src={assetUrl("brand/reaspekt-logo.png")} alt="Реаспект" className="w-36 brightness-0 invert" /></div>
-              <button type="button" onClick={() => setContactOpen(true)} className="focus-ring group mt-6 flex w-full items-center justify-between gap-4 bg-white px-6 py-4 text-left font-medium text-[#130F33] transition-colors hover:bg-[#C6DAD5] active:translate-y-px">Обсудить digital-маркетинг клиники <ArrowUpRight className="shrink-0 transition-transform group-hover:-translate-y-1 group-hover:translate-x-1" size={20} /></button>
+              <button type="button" onClick={openContact} className="focus-ring group mt-6 flex w-full items-center justify-between gap-4 bg-white px-6 py-4 text-left font-medium text-[#130F33] transition-colors hover:bg-[#C6DAD5] active:translate-y-px">Обсудить digital-маркетинг клиники <ArrowUpRight className="shrink-0 transition-transform group-hover:-translate-y-1 group-hover:translate-x-1" size={20} /></button>
               <div className="mt-5 flex flex-wrap items-center gap-x-7 gap-y-3">
                 <a href="https://www.reaspekt.ru/cases/health-wellness/" target="_blank" rel="noreferrer" className="focus-ring inline-flex border-b border-white/50 pb-1 text-sm text-white/80 transition-colors hover:text-white">Смотреть кейсы в медицине</a>
                 <a href="https://www.reaspekt.ru/" target="_blank" rel="noreferrer" className="focus-ring inline-flex border-b border-white/50 pb-1 text-sm text-white/80 transition-colors hover:text-white">Перейти на сайт агентства</a>
@@ -1000,17 +1019,26 @@ function App() {
             <button type="button" onClick={() => setContactOpen(false)} aria-label="Закрыть форму" className="focus-ring absolute right-5 top-5 grid h-11 w-11 place-items-center border border-[#130F33]/20 transition-colors hover:bg-[#EEF0F8]"><X size={25} /></button>
             <h2 id="contact-dialog-title" className="pr-14 text-[clamp(2.3rem,5vw,4.2rem)] font-medium leading-none tracking-[-0.045em]"><span className="text-[#AFB2BC]">Обсудить</span> задачу</h2>
             <p className="mt-6 text-lg">Оставьте заявку и мы свяжемся с вами в ближайшее время</p>
-            <form className="mt-7 space-y-3" onSubmit={submitContact}>
-              <label className="sr-only" htmlFor="contact-name">Ваше имя</label>
-              <input id="contact-name" name="name" required autoComplete="name" placeholder="Ваше имя*" className="focus-ring h-16 w-full border border-[#130F33]/45 bg-white px-6 text-lg placeholder:text-[#324473]" />
-              <label className="sr-only" htmlFor="contact-phone">Ваш телефон</label>
-              <input id="contact-phone" name="phone" required type="tel" autoComplete="tel" placeholder="Ваш телефон*" className="focus-ring h-16 w-full border border-[#130F33]/45 bg-white px-6 text-lg placeholder:text-[#324473]" />
-              <div className="grid items-start gap-5 pt-1 sm:grid-cols-[auto_1fr]">
-                <button type="submit" className="focus-ring group flex min-h-16 items-center justify-between gap-8 bg-[#130F33] px-7 font-medium text-white transition-colors hover:bg-[#162668] active:translate-y-px">Отправить <ArrowUpRight className="transition-transform group-hover:-translate-y-1 group-hover:translate-x-1" size={21} /></button>
-                <label className="flex items-start gap-3 text-sm leading-relaxed"><input type="checkbox" required className="mt-1 h-5 w-5 shrink-0 accent-[#130F33]" /><span>Я ознакомился с положением о сборе, хранении, обработке и передаче персональных данных посетителей сайта, политикой конфиденциальности и даю согласие на обработку моих персональных данных.</span></label>
+            {contactStatus === "success" ? (
+              <div className="mt-8 border border-[#130F33]/20 bg-[#EEF0F8] p-6" role="status">
+                <Check size={32} weight="bold" />
+                <h3 className="mt-4 text-2xl font-medium">Заявка отправлена</h3>
+                <p className="mt-2 text-base leading-relaxed">Спасибо! Мы свяжемся с вами в ближайшее время.</p>
+                <button type="button" onClick={() => setContactOpen(false)} className="focus-ring mt-6 bg-[#130F33] px-7 py-4 font-medium text-white hover:bg-[#162668]">Закрыть</button>
               </div>
+            ) : <form className="mt-7 space-y-3" onSubmit={submitContact}>
+              <label className="sr-only" htmlFor="contact-name">Ваше имя</label>
+              <input id="contact-name" name="name" required maxLength={120} autoComplete="name" placeholder="Ваше имя*" className="focus-ring h-16 w-full border border-[#130F33]/45 bg-white px-6 text-lg placeholder:text-[#324473]" />
+              <label className="sr-only" htmlFor="contact-phone">Ваш телефон</label>
+              <input id="contact-phone" name="phone" required type="tel" inputMode="tel" minLength={6} maxLength={80} autoComplete="tel" placeholder="Ваш телефон*" className="focus-ring h-16 w-full border border-[#130F33]/45 bg-white px-6 text-lg placeholder:text-[#324473]" />
+              <label className="sr-only" aria-hidden="true">Не заполняйте это поле<input name="website" tabIndex={-1} autoComplete="off" className="hidden" /></label>
+              <div className="grid items-start gap-5 pt-1 sm:grid-cols-[auto_1fr]">
+                <button type="submit" disabled={contactStatus === "submitting"} className="focus-ring group flex min-h-16 items-center justify-between gap-8 bg-[#130F33] px-7 font-medium text-white transition-colors hover:bg-[#162668] active:translate-y-px disabled:cursor-wait disabled:opacity-60">{contactStatus === "submitting" ? "Отправляем…" : "Отправить"} <ArrowUpRight className="transition-transform group-hover:-translate-y-1 group-hover:translate-x-1" size={21} /></button>
+                <label className="flex items-start gap-3 text-sm leading-relaxed"><input name="consent" type="checkbox" required className="mt-1 h-5 w-5 shrink-0 accent-[#130F33]" /><span>Я ознакомился с положением о сборе, хранении, обработке и передаче персональных данных посетителей сайта, политикой конфиденциальности и даю согласие на обработку моих персональных данных.</span></label>
+              </div>
+              {(contactStatus === "error" || contactStatus === "configuration-error") && <p className="border-l-2 border-red-700 pl-4 text-sm text-red-800" role="alert">{contactStatus === "configuration-error" ? "Форма временно недоступна: не настроен адрес обработчика." : "Не удалось отправить заявку. Проверьте соединение и попробуйте ещё раз."}</p>}
               <p className="pt-4 text-sm">* Обязательные к заполнению поля</p>
-            </form>
+            </form>}
           </div>
         </div>
       )}
