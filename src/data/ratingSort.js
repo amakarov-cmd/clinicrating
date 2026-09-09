@@ -1,7 +1,7 @@
 export const ratingColumns = [
   { key: "rank", label: "Место", type: "number" },
   { key: "name", label: "Клиника / сеть", type: "text" },
-  { key: "avgMinutes", label: "Среднее время до первого звонка", type: "number" },
+  { key: "avgMinutes", label: "Среднее время до первого звонка (чч:мм:сс)", type: "number" },
   { key: "callbacks", label: "Перезвон по заявкам", type: "status" },
   { key: "onlineBooking", label: "Онлайн-запись", type: "status" },
   { key: "metrikaGoal", label: "Цель в Яндекс Метрике", type: "status" },

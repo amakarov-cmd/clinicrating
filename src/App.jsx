@@ -23,6 +23,24 @@ gsap.registerPlugin(ScrollTrigger, useGSAP);
 
 const assetUrl = (path) => `${import.meta.env.BASE_URL}${path.replace(/^\/+/, "")}`;
 
+const formatDuration = (minutes) => {
+  const totalSeconds = Math.round(minutes * 60);
+  const hours = Math.floor(totalSeconds / 3600);
+  const remainingSeconds = totalSeconds % 3600;
+  const mins = Math.floor(remainingSeconds / 60);
+  const seconds = remainingSeconds % 60;
+  return [hours, mins, seconds].map((value) => String(value).padStart(2, "0")).join(":");
+};
+
+const leaders = clinics.filter((clinic) => clinic.rank <= 3);
+const leadersAverageMinutes = leaders.reduce((total, clinic) => total + clinic.avgMinutes, 0) / leaders.length;
+
+const getLeadersComparison = (minutes) => {
+  const difference = minutes - leadersAverageMinutes;
+  if (Math.abs(difference) < 1 / 120) return "Соответствует среднему времени лидеров";
+  return `${difference < 0 ? "Быстрее" : "Медленнее"} среднего времени топ-3 на ${formatDuration(Math.abs(difference))}`;
+};
+
 const russianServiceWords = [
   "из-за", "кроме", "между", "перед", "через", "чтобы", "потому", "поэтому",
   "без", "близ", "для", "под", "при", "про", "ради", "как", "что", "если",
@@ -371,7 +389,7 @@ function TopClinics() {
               </div>
 
               <div className="top-clinic-details mt-1 grid w-full shrink-0 grid-cols-3 border-t border-[#130F33]/20 pt-4 text-left sm:mt-2 sm:pt-6 md:mt-auto">
-                <div className="pr-3 sm:pr-6"><div className="text-[10px] leading-tight text-[#6D7E80] sm:text-xs">Среднее время до первого звонка</div><div className="mt-2 text-2xl tracking-[-0.04em] tabular-nums sm:text-4xl">{clinic.avgTime}</div></div>
+                <div className="pr-3 sm:pr-6"><div className="text-[10px] leading-tight text-[#6D7E80] sm:text-xs">Среднее время до первого звонка</div><div className="mt-2 text-2xl tracking-[-0.04em] tabular-nums sm:text-4xl">{formatDuration(clinic.avgMinutes)}</div><div className="mt-1 text-[9px] uppercase tracking-[0.08em] text-[#6D7E80] sm:text-[10px]">чч:мм:сс</div></div>
                 <div className="border-l border-[#130F33]/15 px-3 sm:px-6"><div className="text-[10px] leading-tight text-[#6D7E80] sm:text-xs">Перезвон по заявкам</div><div className="mt-2 text-xs font-medium leading-tight sm:text-base">{clinic.callbacks}</div></div>
                 <div className="border-l border-[#130F33]/15 pl-3 sm:pl-6"><div className="text-[10px] leading-tight text-[#6D7E80] sm:text-xs">Онлайн-запись</div><div className="mt-2 text-xs font-medium leading-tight sm:text-base">{clinic.onlineBooking}</div></div>
               </div>
@@ -486,7 +504,7 @@ function RatingTable() {
                         <span>{clinic.name}</span><CaretDown size={18} className={`shrink-0 transition-transform ${isOpen ? "rotate-180" : ""}`} />
                       </button>
                     </td>
-                    <td className="px-3 py-3 align-middle"><div className="text-lg leading-none tabular-nums">{clinic.avgTime}</div><div className="mt-1 text-xs text-[#6D7E80]">{clinic.avgMinutes} мин.</div></td>
+                    <td className="px-3 py-3 align-middle"><div className="text-lg leading-none tabular-nums">{formatDuration(clinic.avgMinutes)}</div><div className="mt-1 text-[10px] uppercase tracking-[0.08em] text-[#6D7E80]">чч:мм:сс</div></td>
                     <td className="px-3 py-3 align-middle"><Status value={clinic.callbacks} /></td>
                     <td className="px-3 py-3 align-middle"><Status value={clinic.onlineBooking} /></td>
                     <td className="px-3 py-3 align-middle"><Status value={clinic.metrikaGoal} /></td>
@@ -502,7 +520,13 @@ function RatingTable() {
                         <div className="grid gap-6 lg:grid-cols-[180px_1fr_1fr]">
                           <div className="text-sm font-medium">Города присутствия</div>
                           <div className="flex flex-wrap gap-x-5 gap-y-2 text-sm">{clinic.cities.map((item) => <span key={item}>{item}</span>)}</div>
-                          <div className="text-sm text-[#130F33]/70">Показатели остаются общесетевыми. Фильтрация по городу не означает, что конкретный филиал в этом городе исследовался отдельно.</div>
+                          <div className="space-y-4 text-sm">
+                            <div className="border-l-2 border-[#162668] pl-4">
+                              <div className="font-medium text-[#130F33]">{getLeadersComparison(clinic.avgMinutes)}</div>
+                              <div className="mt-1 text-[#130F33]/65">Среднее время топ-3 рейтинга — <span className="tabular-nums">{formatDuration(leadersAverageMinutes)}</span></div>
+                            </div>
+                            <div className="text-[#130F33]/70">Показатели остаются общесетевыми. Фильтрация по городу не означает, что конкретный филиал в этом городе исследовался отдельно.</div>
+                          </div>
                         </div>
                       </td>
                     </tr>
@@ -724,7 +748,7 @@ function HeroCopy({ inverse = false }) {
         <strong className="font-medium text-[#130F33]">III квартал 2026 года</strong>
         <span>Подготовлено агентством диджитал-маркетинга Реаспект</span>
       </div>
-      <h1 className={`${inverse ? "hero-title-inverse text-white" : "hero-title text-[#130F33]"} mt-8 max-w-[760px] text-[clamp(2rem,4.25vw,4.75rem)] font-medium leading-[0.94] tracking-[-0.052em] lg:mt-12`}>Рейтинг офтальмологических клиник по работе с онлайн-заявками</h1>
+      <h1 className={`${inverse ? "hero-title-inverse text-white" : "hero-title text-[#130F33]"} mt-8 max-w-[760px] text-[clamp(2rem,4.25vw,4.75rem)] font-medium leading-[0.94] tracking-[-0.052em] lg:mt-12`}>Рейтинг офтальмологических клиник РФ по работе с онлайн-заявками</h1>
       <div aria-label="Кратко об исследовании. Проведите пальцем, чтобы увидеть следующую карточку" className={`${inverse ? "hero-description-inverse invisible" : "hero-description text-[#130F33]"} mt-8 grid max-w-[680px] gap-3 text-lg leading-relaxed lg:mt-10 lg:grid-cols-2`}>
         <p className="hero-frost-panel p-5 lg:p-6">Проверили клиентский путь в офтальмологических клиниках России: от заявки на сайте и первого звонка до записи, напоминания о визите и повторного контакта после отмены.</p>
         <p className="hero-frost-panel p-5 lg:p-6">Рейтинг оценивает не качество лечения или работу врачей, а то, насколько удобно, быстро и последовательно клиника работает с пациентом на цифровом этапе.</p>
