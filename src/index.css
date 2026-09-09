@@ -203,24 +203,6 @@ thead .rating-pinned-cell::after {
   background: linear-gradient(180deg, rgba(238, 240, 248, 0.96) 0%, rgba(238, 240, 248, 0.88) 58%, rgba(238, 240, 248, 0.42) 100%);
 }
 
-.contact-modal {
-  animation: contact-modal-backdrop 220ms ease-out both;
-}
-
-.contact-modal-panel {
-  animation: contact-modal-panel 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-@keyframes contact-modal-backdrop {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes contact-modal-panel {
-  from { opacity: 0; transform: translateY(26px) scale(0.985); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
-}
-
 .nomination-card {
   isolation: isolate;
   border: 1px solid rgba(19, 15, 51, 0.12);
@@ -568,9 +550,7 @@ thead .rating-pinned-cell::after {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .contact-reveal-lit,
-  .contact-modal,
-  .contact-modal-panel {
+  .contact-reveal-lit {
     animation: none;
     transition: none;
   }

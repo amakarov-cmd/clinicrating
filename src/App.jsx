@@ -10,15 +10,12 @@ import {
   ArrowsDownUp,
   CalendarCheck,
   CaretDown,
-  Check,
   Clock,
   Minus,
   Question,
-  X,
 } from "@phosphor-icons/react";
 import { allCities, allSubjects, citySubjects, clinics } from "./data/clinics";
 import { ratingColumns, sortClinics } from "./data/ratingSort";
-import { buildContactPayload, getContactEndpoint, sendContactSubmission } from "./contactSubmission";
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
@@ -741,8 +738,6 @@ function App() {
   const contactVisual = useRef(null);
   const studyTabsStart = useRef(null);
   const studyNav = useRef(null);
-  const [contactOpen, setContactOpen] = useState(false);
-  const [contactStatus, setContactStatus] = useState("idle");
   const [activeTab, setActiveTab] = useState(() => {
     const hash = window.location.hash.replace("#", "");
     return tabs.some((tab) => tab.id === hash) ? hash : "rating";
@@ -818,22 +813,6 @@ function App() {
     };
   }, []);
 
-  useEffect(() => {
-    if (!contactOpen) return undefined;
-
-    const previousOverflow = document.body.style.overflow;
-    const closeOnEscape = (event) => {
-      if (event.key === "Escape") setContactOpen(false);
-    };
-
-    document.body.style.overflow = "hidden";
-    window.addEventListener("keydown", closeOnEscape);
-    return () => {
-      document.body.style.overflow = previousOverflow;
-      window.removeEventListener("keydown", closeOnEscape);
-    };
-  }, [contactOpen]);
-
   const switchTab = (id) => {
     const section = document.getElementById(id);
     if (!section) return;
@@ -877,30 +856,6 @@ function App() {
 
   const hideContactReveal = () => {
     contactVisual.current?.style.setProperty("--contact-reveal-opacity", "0");
-  };
-
-  const openContact = () => {
-    setContactStatus("idle");
-    setContactOpen(true);
-  };
-
-  const submitContact = async (event) => {
-    event.preventDefault();
-    const form = event.currentTarget;
-    const endpoint = getContactEndpoint();
-    if (!endpoint) {
-      setContactStatus("configuration-error");
-      return;
-    }
-
-    setContactStatus("submitting");
-    try {
-      await sendContactSubmission(endpoint, buildContactPayload(form));
-      form.reset();
-      setContactStatus("success");
-    } catch {
-      setContactStatus("error");
-    }
   };
 
   useGSAP(() => {
@@ -1002,49 +957,28 @@ function App() {
             <p className="contact-lead mt-6 max-w-2xl text-lg leading-relaxed">Заявка — только начало пути. Важно, что происходит дальше: насколько удобно записаться, как быстро клиника выходит на связь, подтверждает визит, напоминает о нём и возвращает пациента после отмены.</p>
             <div className="contact-glass hero-frost-panel mt-7 p-5 lg:p-6"><p className="max-w-3xl text-lg leading-relaxed">Реаспект помогает клиникам выстраивать digital-маркетинг как единую систему — от привлечения пациента и сайта до аналитики и CRM-коммуникаций. Поможем найти слабые места в пути пациента и определить точки роста.</p></div>
             <div className="contact-actions mt-4 bg-[#130F33] p-6 text-white lg:p-7">
-              <div className="flex items-center gap-3"><img src={assetUrl("brand/reaspekt-mark-white.png")} alt="" className="h-9 w-9 shrink-0 object-contain" /><img src={assetUrl("brand/reaspekt-logo.png")} alt="Реаспект" className="w-36 brightness-0 invert" /></div>
-              <button type="button" onClick={openContact} className="focus-ring group mt-6 flex w-full items-center justify-between gap-4 bg-white px-6 py-4 text-left font-medium text-[#130F33] transition-colors hover:bg-[#C6DAD5] active:translate-y-px">Обсудить digital-маркетинг клиники <ArrowUpRight className="shrink-0 transition-transform group-hover:-translate-y-1 group-hover:translate-x-1" size={20} /></button>
+              <a href="https://www.reaspekt.ru/?utm_source=rating&utm_medium=pr&utm_campaign=page&utm_content=cases&utm_term=common" target="_blank" rel="noreferrer" aria-label="Перейти на сайт Реаспекта" className="focus-ring inline-flex items-center gap-3"><img src={assetUrl("brand/reaspekt-mark-white.png")} alt="" className="h-9 w-9 shrink-0 object-contain" /><img src={assetUrl("brand/reaspekt-logo.png")} alt="Реаспект" className="w-36 brightness-0 invert" /></a>
+              <a href="https://www.reaspekt.ru/contacts/?utm_source=rating&utm_medium=pr&utm_campaign=page&utm_content=cta" target="_blank" rel="noreferrer" className="focus-ring group mt-6 flex w-full items-center justify-between gap-4 bg-white px-6 py-4 text-left font-medium text-[#130F33] transition-colors hover:bg-[#C6DAD5] active:translate-y-px">Оставить заявку на сайте Реаспекта <ArrowUpRight className="shrink-0 transition-transform group-hover:-translate-y-1 group-hover:translate-x-1" size={20} /></a>
               <div className="mt-5 flex flex-wrap items-center gap-x-7 gap-y-3">
-                <a href="https://www.reaspekt.ru/cases/health-wellness/" target="_blank" rel="noreferrer" className="focus-ring inline-flex border-b border-white/50 pb-1 text-sm text-white/80 transition-colors hover:text-white">Смотреть кейсы в медицине</a>
-                <a href="https://www.reaspekt.ru/" target="_blank" rel="noreferrer" className="focus-ring inline-flex border-b border-white/50 pb-1 text-sm text-white/80 transition-colors hover:text-white">Перейти на сайт агентства</a>
+                <a href="https://www.reaspekt.ru/cases/health-wellness/?utm_source=rating&utm_medium=pr&utm_campaign=page&utm_content=cases" target="_blank" rel="noreferrer" className="focus-ring inline-flex border-b border-white/50 pb-1 text-sm text-white/80 transition-colors hover:text-white">Смотреть кейсы в медицине</a>
+                <a href="https://www.reaspekt.ru/?utm_source=rating&utm_medium=pr&utm_campaign=page&utm_content=cases&utm_term=common" target="_blank" rel="noreferrer" className="focus-ring inline-flex border-b border-white/50 pb-1 text-sm text-white/80 transition-colors hover:text-white">Перейти на сайт агентства</a>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {contactOpen && (
-        <div className="contact-modal fixed inset-0 z-[100] flex items-center justify-center bg-[#130F33]/75 p-4 md:p-8" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setContactOpen(false); }}>
-          <div className="contact-modal-panel relative w-full max-w-[820px] bg-white p-6 text-[#130F33] shadow-[0_34px_110px_rgba(19,15,51,0.38)] md:p-10" role="dialog" aria-modal="true" aria-labelledby="contact-dialog-title">
-            <button type="button" onClick={() => setContactOpen(false)} aria-label="Закрыть форму" className="focus-ring absolute right-5 top-5 grid h-11 w-11 place-items-center border border-[#130F33]/20 transition-colors hover:bg-[#EEF0F8]"><X size={25} /></button>
-            <h2 id="contact-dialog-title" className="pr-14 text-[clamp(2.3rem,5vw,4.2rem)] font-medium leading-none tracking-[-0.045em]"><span className="text-[#AFB2BC]">Обсудить</span> задачу</h2>
-            <p className="mt-6 text-lg">Оставьте заявку и мы свяжемся с вами в ближайшее время</p>
-            {contactStatus === "success" ? (
-              <div className="mt-8 border border-[#130F33]/20 bg-[#EEF0F8] p-6" role="status">
-                <Check size={32} weight="bold" />
-                <h3 className="mt-4 text-2xl font-medium">Заявка отправлена</h3>
-                <p className="mt-2 text-base leading-relaxed">Спасибо! Мы свяжемся с вами в ближайшее время.</p>
-                <button type="button" onClick={() => setContactOpen(false)} className="focus-ring mt-6 bg-[#130F33] px-7 py-4 font-medium text-white hover:bg-[#162668]">Закрыть</button>
-              </div>
-            ) : <form className="mt-7 space-y-3" onSubmit={submitContact}>
-              <label className="sr-only" htmlFor="contact-name">Ваше имя</label>
-              <input id="contact-name" name="name" required maxLength={120} autoComplete="name" placeholder="Ваше имя*" className="focus-ring h-16 w-full border border-[#130F33]/45 bg-white px-6 text-lg placeholder:text-[#324473]" />
-              <label className="sr-only" htmlFor="contact-phone">Ваш телефон</label>
-              <input id="contact-phone" name="phone" required type="tel" inputMode="tel" minLength={6} maxLength={80} autoComplete="tel" placeholder="Ваш телефон*" className="focus-ring h-16 w-full border border-[#130F33]/45 bg-white px-6 text-lg placeholder:text-[#324473]" />
-              <label className="sr-only" aria-hidden="true">Не заполняйте это поле<input name="website" tabIndex={-1} autoComplete="off" className="hidden" /></label>
-              <div className="grid items-start gap-5 pt-1 sm:grid-cols-[auto_1fr]">
-                <button type="submit" disabled={contactStatus === "submitting"} className="focus-ring group flex min-h-16 items-center justify-between gap-8 bg-[#130F33] px-7 font-medium text-white transition-colors hover:bg-[#162668] active:translate-y-px disabled:cursor-wait disabled:opacity-60">{contactStatus === "submitting" ? "Отправляем…" : "Отправить"} <ArrowUpRight className="transition-transform group-hover:-translate-y-1 group-hover:translate-x-1" size={21} /></button>
-                <label className="flex items-start gap-3 text-sm leading-relaxed"><input name="consent" type="checkbox" required className="mt-1 h-5 w-5 shrink-0 accent-[#130F33]" /><span>Я ознакомился с положением о сборе, хранении, обработке и передаче персональных данных посетителей сайта, политикой конфиденциальности и даю согласие на обработку моих персональных данных.</span></label>
-              </div>
-              {(contactStatus === "error" || contactStatus === "configuration-error") && <p className="border-l-2 border-red-700 pl-4 text-sm text-red-800" role="alert">{contactStatus === "configuration-error" ? "Форма временно недоступна: не настроен адрес обработчика." : "Не удалось отправить заявку. Проверьте соединение и попробуйте ещё раз."}</p>}
-              <p className="pt-4 text-sm">* Обязательные к заполнению поля</p>
-            </form>}
-          </div>
-        </div>
-      )}
-
       <footer className="bg-[#130F33] py-12 text-white">
-        <div className="mx-auto flex max-w-[1500px] flex-col gap-8 px-5 md:px-10 lg:flex-row lg:items-end lg:justify-between"><p className="max-w-3xl text-sm leading-relaxed text-white/65">Исследование подготовлено <strong className="font-medium text-white">Реаспект</strong> — агентством digital-маркетинга. Работаем на основе данных и помогаем бизнесу расти с помощью рекламы, SEO, аналитики, CRM-маркетинга и развития сайтов.</p><a href="#top" className="focus-ring group flex items-center gap-2 text-sm text-white/70 hover:text-white">Наверх <ArrowUp className="transition-transform group-hover:-translate-y-1" size={17} /></a></div>
+        <div className="mx-auto grid max-w-[1500px] gap-10 px-5 md:px-10 lg:grid-cols-12 lg:gap-8">
+          <p className="max-w-3xl text-sm leading-relaxed text-white/65 lg:col-span-6">Исследование подготовлено <strong className="font-medium text-white">Реаспект</strong> — агентством digital-маркетинга. Работаем на основе данных и помогаем бизнесу расти с помощью рекламы, SEO, аналитики, CRM-маркетинга и развития сайтов.</p>
+          <address className="text-sm not-italic leading-relaxed text-white/65 lg:col-span-4 lg:col-start-8">
+            <strong className="font-medium text-white">ООО «Реаспект»</strong><br />
+            ИНН 1661018256, ОГРН 1071690028530<br />
+            420111, Республика Татарстан, г. Казань, ул. Кремлевская, д. 21, помещение 79<br />
+            <a href="mailto:info@reaspekt.ru" className="focus-ring border-b border-white/40 text-white transition-colors hover:border-white">info@reaspekt.ru</a>
+          </address>
+          <a href="#top" className="focus-ring group flex items-center gap-2 text-sm text-white/70 hover:text-white lg:col-span-1 lg:col-start-12 lg:justify-self-end">Наверх <ArrowUp className="transition-transform group-hover:-translate-y-1" size={17} /></a>
+        </div>
       </footer>
     </main>
   );

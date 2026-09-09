@@ -43,8 +43,6 @@ jobs:
 
       - name: Build website
         run: pnpm run build
-        env:
-          VITE_GOOGLE_SHEETS_WEB_APP_URL: ${{ secrets.GOOGLE_SHEETS_WEB_APP_URL }}
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v6
