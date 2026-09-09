@@ -767,6 +767,9 @@ function App() {
     const sections = tabs.map(({ id }) => document.getElementById(id));
     let frame = 0;
     let refreshFrame = 0;
+    let restoreScrollFrame = 0;
+    let scrollBehaviorBeforeRefresh = "";
+    let scrollBehaviorIsOverridden = false;
 
     const updateActiveSection = () => {
       frame = 0;
@@ -779,6 +782,33 @@ function App() {
     };
     const scheduleUpdate = () => {
       if (!frame) frame = requestAnimationFrame(updateActiveSection);
+    };
+    const refreshScrollTriggers = () => {
+      const scrollX = window.scrollX;
+      const scrollY = window.scrollY;
+      const documentElement = document.documentElement;
+
+      // Preserve the viewport while ScrollTrigger temporarily reverts pinned
+      // elements during a refresh caused by dynamic table content. Some browser
+      // engines otherwise expose the internal jump used for measurement.
+      if (!scrollBehaviorIsOverridden) {
+        scrollBehaviorBeforeRefresh = documentElement.style.scrollBehavior;
+        scrollBehaviorIsOverridden = true;
+      }
+      documentElement.style.scrollBehavior = "auto";
+      ScrollTrigger.refresh();
+      window.scrollTo(scrollX, scrollY);
+
+      cancelAnimationFrame(restoreScrollFrame);
+      restoreScrollFrame = requestAnimationFrame(() => {
+        window.scrollTo(scrollX, scrollY);
+        if (scrollBehaviorBeforeRefresh) {
+          documentElement.style.scrollBehavior = scrollBehaviorBeforeRefresh;
+        } else {
+          documentElement.style.removeProperty("scroll-behavior");
+        }
+        scrollBehaviorIsOverridden = false;
+      });
     };
     const syncHash = () => {
       const id = window.location.hash.slice(1);
@@ -795,7 +825,7 @@ function App() {
       container.style.setProperty("--study-nav-height", `${nav.offsetHeight}px`);
       scheduleUpdate();
       cancelAnimationFrame(refreshFrame);
-      refreshFrame = requestAnimationFrame(() => ScrollTrigger.refresh());
+      refreshFrame = requestAnimationFrame(refreshScrollTriggers);
     });
     resizeObserver.observe(nav);
     sections.forEach((section) => resizeObserver.observe(section));
@@ -812,6 +842,14 @@ function App() {
       cancelAnimationFrame(initialFrame);
       cancelAnimationFrame(frame);
       cancelAnimationFrame(refreshFrame);
+      cancelAnimationFrame(restoreScrollFrame);
+      if (scrollBehaviorIsOverridden) {
+        if (scrollBehaviorBeforeRefresh) {
+          document.documentElement.style.scrollBehavior = scrollBehaviorBeforeRefresh;
+        } else {
+          document.documentElement.style.removeProperty("scroll-behavior");
+        }
+      }
     };
   }, []);
 
