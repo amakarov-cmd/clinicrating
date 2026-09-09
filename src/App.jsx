@@ -10,9 +10,11 @@ import {
   ArrowsDownUp,
   CalendarCheck,
   CaretDown,
+  Check,
   Clock,
   Minus,
   Question,
+  X,
 } from "@phosphor-icons/react";
 import { allCities, allSubjects, citySubjects, clinics } from "./data/clinics";
 import { ratingColumns, sortClinics } from "./data/ratingSort";
