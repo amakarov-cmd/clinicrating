@@ -45,6 +45,8 @@ jobs:
         uses: actions/configure-pages@v6
 
       - name: Build website
+        env:
+          BASE_PATH: /clinicrating/
         run: pnpm run build
 
       - name: Upload website
